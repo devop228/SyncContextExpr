@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using NLog;
 using NLog.Extensions.Logging;
+using SyncContextExpr.Async;
 
 namespace SyncContextExpr
 {
@@ -39,7 +40,6 @@ namespace SyncContextExpr
                 LogManager.Shutdown();
             }
         }
-
         static IServiceProvider BuildDi(IConfiguration config) 
         {
             return new ServiceCollection()
@@ -91,9 +91,7 @@ namespace SyncContextExpr
                 int id = Thread.CurrentThread.ManagedThreadId;
                 int count = 0;
                 d[id] = d.TryGetValue(id, out count) ? count+1 : 1;
-                _logger.LogDebug("DemoAsync b4 yield {0}", i);
                 await Task.Yield();
-                _logger.LogDebug("DemoAsync aft yield {0}", i);
             }
 
             foreach(var pair in d) 
@@ -101,7 +99,7 @@ namespace SyncContextExpr
         }
 
     }
-    class SingleThreadSynchronizationContext : SynchronizationContext
+    sealed class SingleThreadSynchronizationContext : SynchronizationContext
     {
         private readonly ILogger<SingleThreadSynchronizationContext> _logger;
         
